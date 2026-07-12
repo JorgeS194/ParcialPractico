@@ -1,11 +1,11 @@
 <?php
-require_once '../clases/mod_db.php';
+require_once __DIR__ . '/../Models/mod_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new mod_db();
 
-    require_once '../clases/Sanitizador.php';
-    require_once '../clases/Validador.php';
+    require_once __DIR__ . '/../Services/Sanitizador.php';
+    require_once __DIR__ . '/../Services/Validador.php';
 
     $nombre = Sanitizador::limpiarTexto($_POST['nombre'] ?? '');
     $apellido = Sanitizador::limpiarTexto($_POST['apellido'] ?? '');
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $edad = trim($_POST['edad'] ?? '');
 
     if (!Validador::validarTexto($nombre) || !Validador::validarTexto($apellido) || !Validador::validarTexto($nacionalidad) || !Validador::validarEmail($correo) || !Validador::validarTelefono($celular) || !Validador::validarNumerico($edad, 1)) {
-        header("Location: ../public/formulario_colaborador.php?status=error");
+        header("Location: index.php?route=colaborador&status=error");
         exit;
     }
 
@@ -38,14 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Redirigir según el resultado
     if ($resultado) {
-        header("Location: ../public/formulario_colaborador.php?status=success");
+        header("Location: index.php?route=colaborador&status=success");
         exit;
     } else {
-        header("Location: ../public/formulario_colaborador.php?status=error");
+        header("Location: index.php?route=colaborador&status=error");
         exit;
     }
 } else {
     // Si se accede al archivo sin método POST, redirigimos al formulario
-    header("Location: ../public/formulario_colaborador.php");
+    header("Location: index.php?route=colaborador");
     exit;
 }

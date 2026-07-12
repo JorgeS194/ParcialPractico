@@ -122,3 +122,11 @@ footer {
     color: #6b7280;
     font-weight: 400;
 }
+
+.fila-integra {
+    background-color: #dcfce7 !important;
+}
+
+.fila-alterada {
+    background-color: #fee2e2 !important;
+}

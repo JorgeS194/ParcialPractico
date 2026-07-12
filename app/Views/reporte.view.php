@@ -1,7 +1,11 @@
 <?php
-require_once '../clases/mod_db.php';
+require_once __DIR__ . '/../Models/mod_db.php';
 
 $db = new mod_db();
+
+// Cargar llave pública para verificación de firma
+$publicKeyPath = __DIR__ . '/../../storage/keys/public_key.pem';
+$publicKey = file_exists($publicKeyPath) ? file_get_contents($publicKeyPath) : null;
 
 $sql = "
     SELECT
@@ -20,10 +24,13 @@ $sql = "
         cr.Nombre  AS ruta,
         oc.OCUPACION   AS ocupacion,
         te.Nombre  AS tipo_empleado,
+        pl.id_tipoempleado,
+        pl.id_ocupacion,
         pl.salario,
         pl.fecha_inicio,
         pl.fecha_fin,
-        pl.es_activo   AS perfil_activo
+        pl.es_activo   AS perfil_activo,
+        pl.firma_integridad
     FROM colaboradores c
     LEFT JOIN perfiles_laborales pl
         ON pl.id_colaborador = c.id_colaborador AND pl.es_activo = 1
@@ -134,7 +141,7 @@ $colaboradores = $db->Arreglos($sql);
     <div class="report-container">
         <div class="report-header">
             <h1>Reporte de Colaboradores</h1>
-            <a href="../controllers/exportar_excel.php" class="btn-export">⬇ Exportar a Excel</a>
+            <a href="index.php?route=exportar_excel" class="btn-export">⬇ Exportar a Excel</a>
         </div>
 
         <div class="table-wrapper">
@@ -148,17 +155,41 @@ $colaboradores = $db->Arreglos($sql);
                         <th>Contacto</th>
                         <th>Perfil Activo</th>
                         <th>Estado</th>
+                        <th>Integridad</th>
                         <th>Registro</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($colaboradores)): ?>
                         <tr>
-                            <td colspan="8" class="no-data">No hay colaboradores registrados.</td>
+                            <td colspan="9" class="no-data">No hay colaboradores registrados.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($colaboradores as $col): ?>
-                            <tr>
+                            <?php
+                                // Verificar integridad de firma
+                                $claseIntegridad = '';
+                                $textoIntegridad = '';
+                                if ($col['perfil_activo'] && $publicKey) {
+                                    $dataVerificar = $col['id_colaborador'] . '|' . $col['id_tipoempleado'] . '|' . $col['id_ocupacion'] . '|' . $col['salario'] . '|' . $col['fecha_inicio'];
+                                    $firmaGuardada = $col['firma_integridad'] ?? '';
+                                    if (!empty($firmaGuardada)) {
+                                        $firmaDecodificada = base64_decode($firmaGuardada);
+                                        $resultado = openssl_verify($dataVerificar, $firmaDecodificada, $publicKey, OPENSSL_ALGO_SHA256);
+                                        if ($resultado === 1) {
+                                            $claseIntegridad = 'fila-integra';
+                                            $textoIntegridad = '✔ Íntegro';
+                                        } else {
+                                            $claseIntegridad = 'fila-alterada';
+                                            $textoIntegridad = '✘ Alterado';
+                                        }
+                                    } else {
+                                        $claseIntegridad = 'fila-alterada';
+                                        $textoIntegridad = '✘ Sin firma';
+                                    }
+                                }
+                            ?>
+                            <tr class="<?php echo $claseIntegridad; ?>">
                                 <td><?php echo htmlspecialchars($col['id_colaborador']); ?></td>
                                 <td><?php echo htmlspecialchars($col['identidad']); ?></td>
                                 <td><?php echo htmlspecialchars($col['nombre'] . ' ' . $col['apellido']); ?></td>
@@ -200,6 +231,15 @@ $colaboradores = $db->Arreglos($sql);
                                         <span class="badge badge-active">Activo</span>
                                     <?php else: ?>
                                         <span class="badge badge-inactive">Inactivo</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($textoIntegridad)): ?>
+                                        <span class="badge <?php echo $claseIntegridad === 'fila-integra' ? 'badge-active' : 'badge-inactive'; ?>">
+                                            <?php echo $textoIntegridad; ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color:#9ca3af;">—</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo htmlspecialchars($col['fecha_registro']); ?></td>

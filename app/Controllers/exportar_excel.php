@@ -1,8 +1,8 @@
 <?php
-require_once '../clases/mod_db.php';
+require_once __DIR__ . '/../Models/mod_db.php';
 
 // Asegurar que exista el directorio de exportaciones
-$exportDir = __DIR__ . '/../public/exportados/';
+$exportDir = __DIR__ . '/../../public/exportados/';
 if (!is_dir($exportDir)) {
     mkdir($exportDir, 0755, true);
 }
@@ -10,7 +10,7 @@ if (!is_dir($exportDir)) {
 $outputFile = $exportDir . 'reporte_colaboradores.xlsx';
 
 // Cargar autoloader de Composer
-require_once '../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

@@ -1,5 +1,5 @@
 <?php
-require_once '../clases/mod_db.php';
+require_once __DIR__ . '/../Models/mod_db.php';
 $db = new mod_db();
 
 // Datos para los selects
@@ -112,7 +112,8 @@ if (isset($_GET['status'])) {
             <?php endif; ?>
 
             <!-- Búsqueda de colaborador -->
-            <form method="GET" action="">
+            <form method="GET" action="index.php">
+                <input type="hidden" name="route" value="perfil">
                 <div class="search-section">
                     <div class="form-group">
                         <label for="identidad">Buscar Colaborador por Identidad</label>
@@ -135,7 +136,7 @@ if (isset($_GET['status'])) {
                     <p><strong>Identidad:</strong> <?php echo htmlspecialchars($colaborador['identidad']); ?></p>
                 </div>
 
-                <form method="POST" action="../controllers/guardar_perfil.php">
+                <form method="POST" action="index.php?route=guardar_perfil">
                     <input type="hidden" name="id_colaborador" value="<?php echo htmlspecialchars($colaborador['id_colaborador']); ?>">
 
                     <!-- Sección: Nuevo Perfil / Promoción -->

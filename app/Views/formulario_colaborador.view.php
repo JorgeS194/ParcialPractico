@@ -1,5 +1,5 @@
 <?php
-require_once '../clases/mod_db.php';
+require_once __DIR__ . '/../Models/mod_db.php';
 $db = new mod_db();
 
 // Obtener datos para los selects
@@ -39,7 +39,7 @@ if (isset($_GET['status'])) {
                 </div>
             <?php endif; ?>
 
-            <form action="../controllers/guardar_colaborador.php" method="POST">
+            <form action="index.php?route=guardar_colaborador" method="POST">
                 <div class="form-group">
                     <label for="identidad">Identidad (Documento de Identificación)</label>
                     <input type="text" id="identidad" name="identidad" required>
