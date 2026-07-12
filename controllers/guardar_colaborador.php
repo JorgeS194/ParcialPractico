@@ -4,18 +4,33 @@ require_once '../clases/mod_db.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new mod_db();
 
+    require_once '../clases/Sanitizador.php';
+    require_once '../clases/Validador.php';
+
+    $nombre = Sanitizador::limpiarTexto($_POST['nombre'] ?? '');
+    $apellido = Sanitizador::limpiarTexto($_POST['apellido'] ?? '');
+    $nacionalidad = Sanitizador::limpiarTexto($_POST['nacionalidad'] ?? '');
+    $correo = Sanitizador::limpiarEmail($_POST['correo'] ?? '');
+    $celular = trim($_POST['celular'] ?? '');
+    $edad = trim($_POST['edad'] ?? '');
+
+    if (!Validador::validarTexto($nombre) || !Validador::validarTexto($apellido) || !Validador::validarTexto($nacionalidad) || !Validador::validarEmail($correo) || !Validador::validarTelefono($celular) || !Validador::validarNumerico($edad, 1)) {
+        header("Location: ../public/formulario_colaborador.php?status=error");
+        exit;
+    }
+
     // Recolectar datos del formulario para mapearlos con las columnas de la tabla colaboradores
     $data = [
         'identidad' => $_POST['identidad'] ?? '',
-        'nombre' => $_POST['nombre'] ?? '',
-        'apellido' => $_POST['apellido'] ?? '',
-        'edad' => $_POST['edad'] ?? '',
+        'nombre' => $nombre,
+        'apellido' => $apellido,
+        'edad' => $edad,
         'id_tiposangre' => $_POST['id_tiposangre'] ?? '',
         'id_sexo' => $_POST['id_sexo'] ?? '',
-        'nacionalidad' => $_POST['nacionalidad'] ?? '',
+        'nacionalidad' => $nacionalidad,
         'id_ruta' => $_POST['id_ruta'] ?? '',
-        'correo' => $_POST['correo'] ?? '',
-        'celular' => $_POST['celular'] ?? ''
+        'correo' => $correo,
+        'celular' => $celular
     ];
 
     // Intentar insertar los datos
